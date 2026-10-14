@@ -1,22 +1,22 @@
 # Manager Library Infrastructure
 
-Local development infrastructure for the Manager Library assessment. This repository owns the container setup, network, persistent volumes, and an initially empty PostgreSQL database.
+Docker Compose starts PostgreSQL 16, the Laravel API, and the React app. PostgreSQL starts with no library tables; the API runs the migrations and provisions the administrator on its first start.
 
-## Target stack
+## Start locally
 
-- Docker Compose
-- PostgreSQL 16
-- Laravel API and React app from their sibling repositories
+1. Copy `.env.example` to `.env`.
+2. Set unique values for `APP_KEY`, `DB_PASSWORD`, `JWT_SECRET`, and `ADMIN_PASSWORD`. `APP_KEY` must be `base64:` plus a Base64-encoded 32-byte key. Keep `.env` private.
+3. Run `docker compose up --build` from this directory.
+4. Open `http://localhost:8081`; the browser app forwards `/api/v1` to the internal Laravel service.
 
-## Development status
+The database uses a named volume and survives container restarts. `docker compose down -v` deletes the database volume and all stored library data. For a public deployment, terminate HTTPS at a trusted reverse proxy and provide deployment-grade secrets before exposing the app. The API service is not published directly to the host.
 
-Implementation is in progress. The database starts empty; schema and seed data are owned by Laravel migrations. The intended developer workflow is a single Compose command from this repository.
+## Services
 
-Configuration and credentials must come from environment variables. Commit only safe example values; never commit real secrets.
+| Service | Purpose |
+|---|---|
+| `db` | PostgreSQL 16 with a persistent volume |
+| `api` | Laravel migrations, admin provisioning, and JSON API |
+| `app` | Static React build served by Nginx, with API reverse proxy |
 
-## Related repositories
-
-- [Product specification](https://github.com/code-sena/test-manager-library-3145555-docs)
-- `test-manager-library-3145555-api` — Laravel backend and migrations
-- `test-manager-library-3145555-app` — React interface
-- `test-manager-library-3145555-tool` — API-based demo-data seeder
+See the [business specification](https://github.com/code-sena/test-manager-library-3145555-docs) for the data and HTTP contract.
